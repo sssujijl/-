@@ -2,6 +2,7 @@ import express from 'express';
 import { prisma } from '../modules/index.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import authMiddleware from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
@@ -56,6 +57,19 @@ router.post('/log-in', async (req,res,next) => {
 })
 
 // 내 정보 조회 API
+router.get('/users', authMiddleware, async (req,res,next) => {
+    const {userId} = req.user;
 
+    const user = await prisma.users.findFirst({
+        where : {userId : +userId},
+        select : {
+            userId : true,
+            email : true,
+            name : true
+        }
+    });
+
+    return res.status(200).json({data : user});
+})
 
 export default router;
