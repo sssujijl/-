@@ -39,4 +39,22 @@ router.get('/resumes', async (req,res,next) => {
     return res.status(200).json({data : resumes});
 })
 
+router.get('/resumes/:resumeId', async (req,res,next) => {
+    const {resumeId} = req.params;
+    const resume = await prisma.resumes.findFirst({
+        where : {resumeId : +resumeId},
+        select : {
+            resumeId : true,
+            userId : true,
+            title : true,
+            content : true,
+            author : true,
+            createdAt : true,
+            updatedAt : true
+        }
+    });
+
+    return res.status(200).json({data : resume});
+})
+
 export default router;
