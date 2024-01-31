@@ -103,6 +103,9 @@ router.delete('/resumes/:resumeId', async (req,res,next) => {
         return res.status(404).json({message : "이력서 조회에 실패하였습니다."});
     };
 
+    const resume = await prisma.resumes.delete({where : Id});
+
+    return res.status(200).json({message : "해당 이력서를 삭제하였습니다."});
     
 })
 
