@@ -20,4 +20,23 @@ router.post('/resumes', authMiddleware, async (req,res,next) => {
     return res.status(201).json({data : resume});
 })
 
+router.get('/resumes', async (req,res,next) => {
+    const resumes = await prisma.resumes.findMany({
+        select : {
+            resumeId : true,
+            userId : true,
+            title : true,
+            content : true,
+            author : true,
+            createdAt : true,
+            updatedAt : true
+        },
+        orderBy : {
+            createdAt : 'desc'
+        }
+    });
+
+    return res.status(200).json({data : resumes});
+})
+
 export default router;
