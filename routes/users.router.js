@@ -36,6 +36,26 @@ router.post('/sign-up', async (req,res,next) => {
     return res.status(201).json({email, name})
 })
 
-router.post('/log-in', async (req,res,next))
+// 로그인 API
+router.post('/log-in', async (req,res,next) => {
+    const {email, password} = req.body;
+    const user = await prisma.users.findFirst({where : {email}});
+
+    if (!user) {
+        return res.status(401).json({message : "존재하지 않는 이메일입니다."})
+    } else if (!(await bcrypt.compare(password, user.password))) {
+        return res.status(401).json({message : "비밀번호가 일치하지 않습니다."})
+    };
+
+    const token = jwt.sign(
+        {userId : user.userId},'custom-secret-key'
+    );
+
+    res.cookie('authorization', `Bearer ${token}`);
+    return res.status(200).json({message : "로그인하였습니다."})
+})
+
+// 내 정보 조회 API
+
 
 export default router;
