@@ -3,54 +3,6 @@ import dotenv from "dotenv";
 import { prisma } from "../modules/index.js";
 dotenv.config();
 
-function createAccessToken(id) {
-  const accessToken = jwt.sign(
-    { id: id },
-    process.env.ACCESS_TOKEN_SECRET_KEY,
-    { expiresIn: "12h" },
-  );
-
-  return accessToken;
-}
-
-function createRefreshToken(id) {
-  const refreshToken = jwt.sign(
-    { id: id },
-    process.env.REFRESH_TOKEN_SECRET_KEY,
-    { expiresIn: "7d" },
-  );
-
-  return refreshToken;
-}
-
-function validateToken(token, secretKey) {
-  try {
-    const payload = jwt.verify(token, secretKey);
-    return payload;
-  } catch (error) {
-    return null;
-  }
-}
-
-function VerificationToken(req, res) {
-  const accessToken = req.cookies.accessToken;
-  if (!accessToken) {
-    return res
-      .status(400)
-      .json({ message: "Access Token이 존재하지 않습니다." });
-  }
-
-  const payload = validateToken(
-    accessToken,
-    process.env.ACCESS_TOKEN_SECRET_KEY,
-  );
-  if (!payload) {
-    return res
-      .status(401)
-      .json({ message: "Access Token이 유효하지 않습니다." });
-  }
-}
-
 async function CreateTokens(res, id) {
   const accessToken = createAccessToken(id);
   const refreshToken = createRefreshToken(id);
@@ -100,6 +52,54 @@ async function newCreateToken(req, res) {
 
   res.cookie("accessToken", newAccessToken);
   return res.json({ message: "Access Token을 새롭게 발급하였습니다." });
+}
+
+function createAccessToken(id) {
+  const accessToken = jwt.sign(
+    { id: id },
+    process.env.ACCESS_TOKEN_SECRET_KEY,
+    { expiresIn: "12h" },
+  );
+
+  return accessToken;
+}
+
+function createRefreshToken(id) {
+  const refreshToken = jwt.sign(
+    { id: id },
+    process.env.REFRESH_TOKEN_SECRET_KEY,
+    { expiresIn: "7d" },
+  );
+
+  return refreshToken;
+}
+
+function validateToken(token, secretKey) {
+  try {
+    const payload = jwt.verify(token, secretKey);
+    return payload;
+  } catch (error) {
+    return null;
+  }
+}
+
+function VerificationToken(req, res) {
+  const accessToken = req.cookies.accessToken;
+  if (!accessToken) {
+    return res
+      .status(400)
+      .json({ message: "Access Token이 존재하지 않습니다." });
+  }
+
+  const payload = validateToken(
+    accessToken,
+    process.env.ACCESS_TOKEN_SECRET_KEY,
+  );
+  if (!payload) {
+    return res
+      .status(401)
+      .json({ message: "Access Token이 유효하지 않습니다." });
+  }
 }
 
 export {
