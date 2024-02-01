@@ -1,6 +1,5 @@
 import express from 'express';
 import { prisma } from '../modules/index.js';
-import authMiddleware from '../middlewares/auth.middleware.js';
 import { VerificationToken, validateToken } from '../middlewares/middleware.js';
 
 const router = express.Router();
@@ -21,7 +20,7 @@ router.post('/resumes', async (req,res,next) => {
 
     const resume = await prisma.resumes.create({
         data : {
-            userId : +user.id,
+            userId : +user.userId,
             title,
             content,
             author : user.name
