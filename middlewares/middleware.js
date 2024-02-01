@@ -32,17 +32,6 @@ function validateToken(token, secretKey) {
     }
 }
 
-async function createTokens(res, id) {
-    const accessToken = createAccessToken(id);
-    const refreshToken = createRefreshToken(id);
-
-    await prisma.RefreshToken.create({
-        data: { refreshtoken : refreshToken },
-    });
-
-    res.cookie('accessToken', accessToken);
-}
-
 function VerificationToken(req, res) {
     const accessToken = req.cookies.accessToken;
     if (!accessToken) {
@@ -64,12 +53,12 @@ async function newCreateToken(req, res) {
         return res.status(400).json({ message: "Refresh Token이 존재하지 않습니다." });
     }
 
-    const payload = validateToken(refreshToken, process.env.REFRESH_TOKEN_SECRET_KEY);
+    const payload = validateToken(refreshToken.refreshtoken, process.env.REFRESH_TOKEN_SECRET_KEY);
     if (!payload) {
         return res.status(401).json({ message: "Refresh Token이 유효하지않습니다." });
     }
 
-    if (!refreshToken) {
+    if (!refreshToken.refreshtoken) {
         return res.status(419).json({ message: "Refresh Token의 정보가 서버에 존재하지 않습니다." });
     }
 
