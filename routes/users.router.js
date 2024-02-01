@@ -38,9 +38,6 @@ router.post("/sign-up", async (req, res, next) => {
     where: { email },
   });
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const hashedCPassword = await bcrypt.hash(confirmpassword, 10);
-
   if (isExistUser) {
     return res.status(409).json({ message: "이미 존재하는 이메일입니다." });
   }
@@ -54,6 +51,9 @@ router.post("/sign-up", async (req, res, next) => {
   if (password !== confirmpassword) {
     return res.status(400).json({ message: "비밀번호가 일치하지 않습니다." });
   }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedCPassword = await bcrypt.hash(confirmpassword, 10);
 
   const user = await prisma.users.create({
     data: {

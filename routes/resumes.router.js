@@ -15,10 +15,20 @@ router.post("/resumes", async (req, res, next) => {
     accessToken,
     process.env.ACCESS_TOKEN_SECRET_KEY,
   );
+
   const user = await prisma.users.findFirst({ where: { userId: +userId.id } });
-  console.log(user);
 
   const { title, content } = req.body;
+
+  if (title.length === 0) {
+    return res
+      .status(400)
+      .json({ errorMessage: "제목을 입력하세요." });
+  } else if (content.length === 0) {
+    return res
+      .status(400)
+      .json({ errorMessage: "자기소개를 입력하세요." });
+  }
 
   const resume = await prisma.resumes.create({
     data: {
@@ -52,12 +62,17 @@ router.get("/resumes/:orderValue", async (req, res, next) => {
     },
   });
 
+  if(!resumes) {
+    return res.status(404).json({ message: "이력서 조회에 실패하였습니다." });
+  }
+
   return res.status(200).json({ data: resumes });
 });
 
 // 이력서 상세 조회 API
-router.get("/resumes/:resumeId", async (req, res, next) => {
+router.get("/resume/:resumeId", async (req, res, next) => {
   const { resumeId } = req.params;
+
   const resume = await prisma.resumes.findFirst({
     where: { resumeId: +resumeId },
     select: {
@@ -71,6 +86,10 @@ router.get("/resumes/:resumeId", async (req, res, next) => {
       updatedAt: true,
     },
   });
+
+  if (!resume) {
+    return res.status(404).json({ message: "이력서 조회에 실패하였습니다." });
+  }
 
   return res.status(200).json({ data: resume });
 });
