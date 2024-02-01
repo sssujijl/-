@@ -51,6 +51,22 @@ function VerificationToken(req, res) {
   }
 }
 
+async function CreateTokens(res, id) {
+  const accessToken = createAccessToken(id);
+  const refreshToken = createRefreshToken(id);
+
+  if (!accessToken || !refreshToken) {
+    return res.json({errormessage : "안됌"});
+  }
+
+  await prisma.RefreshToken.create({
+    data: { refreshtoken: refreshToken },
+  });
+
+  res.cookie("accessToken", accessToken);
+  res.cookie("refreshToken", refreshToken);
+}
+
 async function newCreateToken(req, res) {
   const RefreshToken = req.cookies.refreshToken;
 
@@ -87,9 +103,8 @@ async function newCreateToken(req, res) {
 }
 
 export {
-  createAccessToken,
-  createRefreshToken,
   VerificationToken,
   newCreateToken,
   validateToken,
+  CreateTokens
 };

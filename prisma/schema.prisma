@@ -48,6 +48,8 @@ enum Status {
 
 model RefreshToken {
   refreshtoken String @id @map("refreshtoken")
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
 
   @@map("RefreshToken")
 }

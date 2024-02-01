@@ -2,11 +2,10 @@ import express from "express";
 import { prisma } from "../modules/index.js";
 import bcrypt from "bcrypt";
 import {
-  createAccessToken,
-  createRefreshToken,
   VerificationToken,
   newCreateToken,
   validateToken,
+  CreateTokens
 } from "../middlewares/middleware.js";
 
 const router = express.Router();
@@ -52,7 +51,7 @@ router.post("/sign-up", async (req, res, next) => {
     return res.status(400).json({ message: "비밀번호가 일치하지 않습니다." });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
   const hashedCPassword = await bcrypt.hash(confirmpassword, 10);
 
   const user = await prisma.users.create({
@@ -78,15 +77,9 @@ router.post("/log-in", async (req, res, next) => {
     return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
   }
 
-  const accessToken = createAccessToken(user.userId);
-  const refreshToken = createRefreshToken(user.userId);
-
-  await prisma.RefreshToken.create({
-    data: { refreshtoken: refreshToken },
-  });
-
-  res.cookie("accessToken", accessToken);
-  res.cookie("refreshToken", refreshToken);
+  if(await CreateTokens(res, user.userId)) {
+    return;
+  }
 
   return res.status(200).json({ message: "로그인하였습니다." });
 });
