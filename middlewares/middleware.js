@@ -1,8 +1,7 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { prisma } from '../modules/index.js';
 dotenv.config();
-
-let tokenStorage = {};
 
 function createAccessToken(id) {
     const accessToken = jwt.sign(
@@ -33,18 +32,15 @@ function validateToken(token, secretKey) {
     }
 }
 
-function createTokens(req, res, id) {
+async function createTokens(res, id) {
     const accessToken = createAccessToken(id);
     const refreshToken = createRefreshToken(id);
 
-    tokenStorage[refreshToken] = {
-        id: id,
-        ip: req.ip,
-        userAgent: req.headers['user-agent'],
-    };
+    await prisma.RefreshToken.create({
+        data: { refreshtoken : refreshToken },
+    });
 
     res.cookie('accessToken', accessToken);
-    res.cookie('refreshToken', refreshToken);
 }
 
 function VerificationToken(req, res) {
@@ -59,10 +55,12 @@ function VerificationToken(req, res) {
     }
 }
 
-function newCreateToken(req, res) {
-    const refreshToken = req.cookies.refreshToken;
+async function newCreateToken(req, res) {
+    const RefreshToken = req.cookies.refreshToken;
 
-    if (!refreshToken) {
+    const refreshToken = await prisma.RefreshToken.findFirst({where : {refreshtoken : RefreshToken}});
+
+    if (!RefreshToken) {
         return res.status(400).json({ message: "Refresh Token이 존재하지 않습니다." });
     }
 
@@ -71,12 +69,11 @@ function newCreateToken(req, res) {
         return res.status(401).json({ message: "Refresh Token이 유효하지않습니다." });
     }
 
-    const userInfo = tokenStorage[refreshToken];
-    if (!userInfo) {
+    if (!refreshToken) {
         return res.status(419).json({ message: "Refresh Token의 정보가 서버에 존재하지 않습니다." });
     }
 
-    const newAccessToken = createAccessToken(userInfo.id);
+    const newAccessToken = createAccessToken(refreshToken.id);
 
     res.cookie('accessToken', newAccessToken);
     return res.json({ message: "Access Token을 새롭게 발급하였습니다." });
@@ -84,4 +81,4 @@ function newCreateToken(req, res) {
 
 
 
-export { createTokens, VerificationToken, newCreateToken, validateToken };
+export { createAccessToken, createRefreshToken, VerificationToken, newCreateToken, validateToken };

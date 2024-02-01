@@ -45,3 +45,9 @@ enum Status {
   INTERVIEW2
   FINAL_PASS
 }
+
+model RefreshToken {
+  refreshtoken String @id @map("refreshtoken")
+
+  @@map("RefreshToken")
+}
