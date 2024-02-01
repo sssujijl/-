@@ -14,6 +14,26 @@ const router = express.Router();
 // 회원가입 API
 router.post("/sign-up", async (req, res, next) => {
   const { email, password, confirmpassword, name } = req.body;
+
+  if (email.length === 0) {
+    return res
+      .status(400)
+      .json({ errorMessage: "이메일을 입력하세요." });
+  } else if (name.length === 0) {
+    return res
+      .status(400)
+      .json({ errorMessage: "이름을 입력하세요." });
+  }
+
+  let com = "";
+  for (let i=email.length-4; i<email.length; i++) {
+    com += email[i];
+  }
+
+  if (com !== '.com') {
+    return res.status(400).json({message : "이메일 형식이 틀립니다."});
+  }
+
   const isExistUser = await prisma.users.findFirst({
     where: { email },
   });
