@@ -1,20 +1,30 @@
 import express from 'express';
 import { prisma } from '../modules/index.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
+import { VerificationToken, validateToken } from '../middlewares/middleware.js';
 
 const router = express.Router();
 
 // 이력서 생성 API
-router.post('/resumes', authMiddleware, async (req,res,next) => {
-    const {userId} = req.user;
-    const {title, content, author} = req.body;
+router.post('/resumes', async (req,res,next) => {
+
+    if (await VerificationToken(req, res)) {
+        return;
+    }
+
+    const accessToken = req.cookies.accessToken;
+    const userId = validateToken(accessToken, process.env.ACCESS_TOKEN_SECRET_KEY);
+    const user = await prisma.users.findFirst({where: {userId : +userId.id} })
+    console.log(user);
+
+    const {title, content} = req.body;
 
     const resume = await prisma.resumes.create({
         data : {
-            userId : +userId,
+            userId : +user.id,
             title,
             content,
-            author
+            author : user.name
         }
     });
 
@@ -22,7 +32,9 @@ router.post('/resumes', authMiddleware, async (req,res,next) => {
 })
 
 // 모든 이력서 조회 API
-router.get('/resumes', async (req,res,next) => {
+router.get('/resumes/:orderValue', async (req,res,next) => {
+    const {orderValue} = req.params;
+
     const resumes = await prisma.resumes.findMany({
         select : {
             resumeId : true,
@@ -35,7 +47,7 @@ router.get('/resumes', async (req,res,next) => {
             updatedAt : true
         },
         orderBy : {
-            createdAt : 'desc'
+            createdAt : orderValue.toLowerCase() === 'asc' ? 'asc' : 'desc'
         }
     });
 
@@ -64,8 +76,15 @@ router.get('/resumes/:resumeId', async (req,res,next) => {
 
 // 이력서 수정 API
 router.put('/resumes/:resumeId', async (req,res,next) => {
+
+    if (await VerificationToken(req, res)) {
+        return;
+    }
+
     const {resumeId} = req.params;
     const {title, content, status} = req.body;
+
+
     const Id = await prisma.resumes.findFirst({where : {resumeId : +resumeId}});
 
     if (!Id) {
@@ -96,6 +115,10 @@ router.put('/resumes/:resumeId', async (req,res,next) => {
 
 // 이력서 삭제 API
 router.delete('/resumes/:resumeId', async (req,res,next) => {
+    if (await VerificationToken(req, res)) {
+        return;
+    }
+
     const {resumeId} = req.params;
     const Id = await prisma.resumes.findFirst({where : {resumeId : +resumeId}});
 
