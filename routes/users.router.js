@@ -54,7 +54,7 @@ router.post('/log-in', async (req, res, next) => {
 })
 
 // Access Token 재발급 API
-router.post('/tokens', async (req, res) => {
+router.get('/tokens', async (req, res) => {
     await newCreateToken(req, res);
 })
 
