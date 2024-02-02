@@ -16,6 +16,7 @@ async function CreateTokens(res, id) {
   });
 
   res.cookie("accessToken", accessToken);
+  res.cookie("refreshToken", refreshToken);
 }
 
 async function newCreateToken(req, res) {
