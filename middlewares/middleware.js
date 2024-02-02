@@ -16,7 +16,6 @@ async function CreateTokens(res, id) {
   });
 
   res.cookie("accessToken", accessToken);
-  res.cookie("refreshToken", refreshToken);
 }
 
 async function newCreateToken(req, res) {
@@ -48,7 +47,7 @@ async function newCreateToken(req, res) {
       .json({ message: "Refresh Token의 정보가 서버에 존재하지 않습니다." });
   }
 
-  const newAccessToken = createAccessToken(refreshToken.id);
+  const newAccessToken = createAccessToken(payload.id);
 
   res.cookie("accessToken", newAccessToken);
   return res.json({ message: "Access Token을 새롭게 발급하였습니다." });
