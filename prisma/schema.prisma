@@ -14,7 +14,6 @@ model Users {
   userId Int @id @default(autoincrement()) @map("userId")
   email String @unique @map("email")
   password String @map("password")
-  confirmpassword String @map("confirmpassword")
   name String @map("name")
 
   resumes Resumes[]

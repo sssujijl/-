@@ -24,12 +24,9 @@ router.post("/sign-up", async (req, res, next) => {
       .json({ errorMessage: "이름을 입력하세요." });
   }
 
-  let com = "";
-  for (let i=email.length-4; i<email.length; i++) {
-    com += email[i];
-  }
+  let emailFormat = email.indexOf('.com') !== -1 || email.indexOf('.kr') !== -1;
 
-  if (com !== '.com') {
+  if (emailFormat === false) {
     return res.status(400).json({message : "이메일 형식이 틀립니다."});
   }
 
@@ -41,7 +38,7 @@ router.post("/sign-up", async (req, res, next) => {
     return res.status(409).json({ message: "이미 존재하는 이메일입니다." });
   }
 
-  if (password.length !== 6) {
+  if (password.length < 6) {
     return res
       .status(400)
       .json({ message: "비밀번호는 최소 6글자 이상 입력하세요." });
@@ -51,14 +48,12 @@ router.post("/sign-up", async (req, res, next) => {
     return res.status(400).json({ message: "비밀번호가 일치하지 않습니다." });
   }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-  const hashedCPassword = await bcrypt.hash(confirmpassword, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await prisma.users.create({
     data: {
       email,
       password: hashedPassword,
-      confirmpassword: hashedCPassword,
       name,
     },
   });
