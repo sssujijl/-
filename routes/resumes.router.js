@@ -5,18 +5,10 @@ import { VerificationToken, validateToken } from "../middlewares/middleware.js";
 const router = express.Router();
 
 // 이력서 생성 API
-router.post("/resumes", async (req, res, next) => {
-  if (await VerificationToken(req, res)) {
-    return;
-  }
+router.post("/resumes",VerificationToken, async (req, res, next) => {
+  const id = req.user;
 
-  const accessToken = req.cookies.accessToken;
-  const userId = validateToken(
-    accessToken,
-    process.env.ACCESS_TOKEN_SECRET_KEY,
-  );
-
-  const user = await prisma.users.findFirst({ where: { userId: +userId.id } });
+  const user = await prisma.users.findFirst({ where: { userId: id } });
 
   const { title, content } = req.body;
 
@@ -43,22 +35,13 @@ router.post("/resumes", async (req, res, next) => {
 });
 
 // 모든 이력서 조회 API
-router.get("/resumes/:orderValue", async (req, res, next) => {
-  const { orderValue } = req.params;
+router.get("/resumes", async (req, res, next) => {
+  const orderKey = req.query.orderKey;
+  const orderValue = req.query.orderValue;
 
   const resumes = await prisma.resumes.findMany({
-    select: {
-      resumeId: true,
-      userId: true,
-      title: true,
-      content: true,
-      author: true,
-      status: true,
-      createdAt: true,
-      updatedAt: true,
-    },
     orderBy: {
-      createdAt: orderValue.toLowerCase() === "asc" ? "asc" : "desc",
+      [orderKey] : orderValue.toLowerCase()
     },
   });
 
@@ -95,11 +78,7 @@ router.get("/resume/:resumeId", async (req, res, next) => {
 });
 
 // 이력서 수정 API
-router.put("/resumes/:resumeId", async (req, res, next) => {
-  if (await VerificationToken(req, res)) {
-    return;
-  }
-
+router.put("/resumes/:resumeId", VerificationToken, async (req, res, next) => {
   const { resumeId } = req.params;
   const { title, content, status } = req.body;
 
@@ -132,11 +111,7 @@ router.put("/resumes/:resumeId", async (req, res, next) => {
 });
 
 // 이력서 삭제 API
-router.delete("/resumes/:resumeId", async (req, res, next) => {
-  if (await VerificationToken(req, res)) {
-    return;
-  }
-
+router.delete("/resumes/:resumeId", VerificationToken, async (req, res, next) => {
   const { resumeId } = req.params;
   const Id = await prisma.resumes.findFirst({ where: { resumeId: +resumeId } });
 
@@ -144,7 +119,7 @@ router.delete("/resumes/:resumeId", async (req, res, next) => {
     return res.status(404).json({ message: "이력서 조회에 실패하였습니다." });
   }
 
-  const resume = await prisma.resumes.delete({ where: Id });
+  await prisma.resumes.delete({ where: Id });
 
   return res.status(200).json({ message: "해당 이력서를 삭제하였습니다." });
 });

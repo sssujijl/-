@@ -85,19 +85,11 @@ router.get("/tokens", async (req, res) => {
 });
 
 // 내 정보 조회 API
-router.get("/users", async (req, res, next) => {
-  if (await VerificationToken(req, res)) {
-    return;
-  }
-
-  const accessToken = req.cookies.accessToken;
-  const userId = validateToken(
-    accessToken,
-    process.env.ACCESS_TOKEN_SECRET_KEY,
-  );
+router.get("/users", VerificationToken, async (req, res, next) => {
+  const id = req.user;
 
   const user = await prisma.users.findFirst({
-    where: { userId: +userId.id },
+    where: { userId: id },
     select: {
       userId: true,
       email: true,
