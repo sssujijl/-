@@ -1,11 +1,11 @@
 import express from "express";
 import { prisma } from "../modules/index.js";
-import { VerificationToken, validateToken } from "../middlewares/middleware.js";
+import { verificationToken, validateToken } from "../middlewares/middleware.js";
 
 const router = express.Router();
 
 // 이력서 생성 API
-router.post("/resumes",VerificationToken, async (req, res, next) => {
+router.post("/resumes",verificationToken, async (req, res, next) => {
   const id = req.user;
 
   const user = await prisma.users.findFirst({ where: { userId: id } });
@@ -78,18 +78,23 @@ router.get("/resume/:resumeId", async (req, res, next) => {
 });
 
 // 이력서 수정 API
-router.put("/resumes/:resumeId", VerificationToken, async (req, res, next) => {
+router.put("/resumes/:resumeId", verificationToken, async (req, res, next) => {
   const { resumeId } = req.params;
   const { title, content, status } = req.body;
+  const userId = req.user;
 
-  const Id = await prisma.resumes.findFirst({ where: { resumeId: +resumeId } });
+  const id = await prisma.Resumes.findFirst({ where: { resumeId: +resumeId } });
 
-  if (!Id) {
+  if (!id) {
     return res.status(404).json({ message: "이력서 조회에 실패하였습니다." });
+  } else if (id.userId !== userId) {
+    return res.status(403).json({ message : "수정할 권한이 없습니다."});
   }
 
-  const resume = await prisma.resumes.update({
-    where: Id,
+  const resume = await prisma.Resumes.update({
+    where: {
+      resumeId : +resumeId,
+    },
     select: {
       resumeId: true,
       userId: true,
@@ -111,12 +116,16 @@ router.put("/resumes/:resumeId", VerificationToken, async (req, res, next) => {
 });
 
 // 이력서 삭제 API
-router.delete("/resumes/:resumeId", VerificationToken, async (req, res, next) => {
+router.delete("/resumes/:resumeId", verificationToken, async (req, res, next) => {
   const { resumeId } = req.params;
+  const userId = req.user;
+
   const Id = await prisma.resumes.findFirst({ where: { resumeId: +resumeId } });
 
   if (!Id) {
     return res.status(404).json({ message: "이력서 조회에 실패하였습니다." });
+  } else if (Id.userId !== userId) {
+    return res.status(403).json({ message : "수정할 권한이 없습니다."});
   }
 
   await prisma.resumes.delete({ where: Id });

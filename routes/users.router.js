@@ -2,10 +2,9 @@ import express from "express";
 import { prisma } from "../modules/index.js";
 import bcrypt from "bcrypt";
 import {
-  VerificationToken,
+  verificationToken,
   newCreateToken,
-  validateToken,
-  CreateTokens
+  createTokens
 } from "../middlewares/middleware.js";
 
 const router = express.Router();
@@ -72,7 +71,7 @@ router.post("/log-in", async (req, res, next) => {
     return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
   }
 
-  if(await CreateTokens(res, user.userId)) {
+  if(await createTokens(res, user.userId)) {
     return;
   }
 
@@ -85,7 +84,7 @@ router.get("/tokens", async (req, res) => {
 });
 
 // 내 정보 조회 API
-router.get("/users", VerificationToken, async (req, res, next) => {
+router.get("/users", verificationToken, async (req, res, next) => {
   const id = req.user;
 
   const user = await prisma.users.findFirst({

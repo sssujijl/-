@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import { prisma } from "../modules/index.js";
 dotenv.config();
 
-async function CreateTokens(res, id) {
+async function createTokens(res, id) {
   const accessToken = createAccessToken(id);
   const refreshToken = createRefreshToken(id);
 
@@ -83,7 +83,7 @@ function validateToken(token, secretKey) {
   }
 }
 
-async function VerificationToken(req, res, next) {
+async function verificationToken(req, res, next) {
   const accessToken = req.cookies.accessToken;
   if (!accessToken) {
     return res
@@ -116,8 +116,8 @@ async function VerificationToken(req, res, next) {
 }
 
 export {
-  VerificationToken,
+  verificationToken,
   newCreateToken,
   validateToken,
-  CreateTokens
+  createTokens
 };
