@@ -1,15 +1,12 @@
 import express from "express";
 import { prisma } from "../modules/index.js";
-import { verificationToken, validateToken } from "../middlewares/middleware.js";
+import { verificationToken } from "../middlewares/middleware.js";
 
 const router = express.Router();
 
 // 이력서 생성 API
 router.post("/resumes",verificationToken, async (req, res, next) => {
-  const id = req.user;
-
-  const user = await prisma.users.findFirst({ where: { userId: id } });
-
+  const {userId, name} = req.user;
   const { title, content } = req.body;
 
   if (title.length === 0) {
@@ -24,10 +21,10 @@ router.post("/resumes",verificationToken, async (req, res, next) => {
 
   const resume = await prisma.resumes.create({
     data: {
-      userId: +user.userId,
+      userId: +userId,
       title,
       content,
-      author: user.name,
+      author: name,
     },
   });
 
@@ -81,7 +78,7 @@ router.get("/resume/:resumeId", async (req, res, next) => {
 router.put("/resumes/:resumeId", verificationToken, async (req, res, next) => {
   const { resumeId } = req.params;
   const { title, content, status } = req.body;
-  const userId = req.user;
+  const { userId } = req.user;
 
   const id = await prisma.Resumes.findFirst({ where: { resumeId: +resumeId } });
 
@@ -118,7 +115,7 @@ router.put("/resumes/:resumeId", verificationToken, async (req, res, next) => {
 // 이력서 삭제 API
 router.delete("/resumes/:resumeId", verificationToken, async (req, res, next) => {
   const { resumeId } = req.params;
-  const userId = req.user;
+  const { userId } = req.user;
 
   const Id = await prisma.resumes.findFirst({ where: { resumeId: +resumeId } });
 

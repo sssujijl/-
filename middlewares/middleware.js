@@ -74,12 +74,23 @@ function createRefreshToken(id) {
   return refreshToken;
 }
 
-function validateToken(token, secretKey) {
+function validateToken(token, secretKey, res) {
   try {
     const payload = jwt.verify(token, secretKey);
     return payload;
+
   } catch (error) {
-    return null;
+    res.clearCookie('accessToken');
+
+    switch (error.name) {
+      case 'TokenExpiredError':
+        return res.status(401).json({message : '토큰이 만료되었습니다.'});
+      case 'JsonWebTokenError':
+        return res.status(401).json({ message: '토큰이 조작되었습니다.' });
+      default:
+        return res.status(401).json({ message: error.message ?? '비정상적인 요청입니다.' });
+    }
+    
   }
 }
 
@@ -94,6 +105,7 @@ async function verificationToken(req, res, next) {
   const payload = validateToken(
     accessToken,
     process.env.ACCESS_TOKEN_SECRET_KEY,
+    res
   );
   if (!payload) {
     return res
@@ -108,9 +120,7 @@ async function verificationToken(req, res, next) {
     res.status(401).json({message : "토큰 사용자가 존재하지 않습니다."});
   }
 
-  req.locals = {};
-  req.user = userId;
-  console.log(req.user);
+  req.user = user;
 
   next();
 }
@@ -118,6 +128,5 @@ async function verificationToken(req, res, next) {
 export {
   verificationToken,
   newCreateToken,
-  validateToken,
   createTokens
 };

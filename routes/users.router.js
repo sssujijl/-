@@ -85,10 +85,10 @@ router.get("/tokens", async (req, res) => {
 
 // 내 정보 조회 API
 router.get("/users", verificationToken, async (req, res, next) => {
-  const id = req.user;
+  const {userId} = req.user;
 
   const user = await prisma.users.findFirst({
-    where: { userId: id },
+    where: { userId: +userId },
     select: {
       userId: true,
       email: true,
