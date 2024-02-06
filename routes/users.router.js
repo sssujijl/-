@@ -23,7 +23,7 @@ router.post("/sign-up", async (req, res, next) => {
       .json({ errorMessage: "이름을 입력하세요." });
   }
 
-  let emailFormat = email.indexOf('.com') !== -1 || email.indexOf('.kr') !== -1;
+  let emailFormat = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/.test(email);
 
   if (emailFormat === false) {
     return res.status(400).json({message : "이메일 형식이 틀립니다."});

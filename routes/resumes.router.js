@@ -91,6 +91,7 @@ router.put("/resumes/:resumeId", verificationToken, async (req, res, next) => {
   const resume = await prisma.Resumes.update({
     where: {
       resumeId : +resumeId,
+      userId : +userId
     },
     select: {
       resumeId: true,
@@ -117,7 +118,7 @@ router.delete("/resumes/:resumeId", verificationToken, async (req, res, next) =>
   const { resumeId } = req.params;
   const { userId } = req.user;
 
-  const Id = await prisma.resumes.findFirst({ where: { resumeId: +resumeId } });
+  const Id = await prisma.resumes.findFirst({ where: { resumeId: +resumeId, userId : +userId } });
 
   if (!Id) {
     return res.status(404).json({ message: "이력서 조회에 실패하였습니다." });
